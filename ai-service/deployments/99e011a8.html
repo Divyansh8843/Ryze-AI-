@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryze Deployment 99e011a8</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:,">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>body { margin: 0; background: #f0f2f5; font-family: sans-serif; }</style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Share Toolbar -->
+    <div style="position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; align-items: center; gap: 12px; font-family: system-ui, -apple-system, sans-serif;">
+        <button onclick="copyLink()" id="shareBtn" style="background: #ffffff; color: #000000; border: 1px solid #e5e7eb; padding: 8px 16px; border-radius: 9999px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share
+        </button>
+        <a href="http://localhost:5173" target="_blank" style="text-decoration: none;">
+            <div style="background: #000000; color: #ffffff; padding: 8px 16px; border-radius: 9999px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                Built with Ryze
+            </div>
+        </a>
+    </div>
+    <script>
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href);
+            const btn = document.getElementById('shareBtn');
+            const original = btn.innerHTML;
+            btn.innerHTML = 'Copied!';
+            btn.style.background = '#e5e7eb';
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.style.background = '#ffffff';
+            }, 2000);
+        }
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Lucide React Adapter (Polyfill) ---
+        // This bridges the gap between generated React code (expecting <Lucide.Icon />)
+        // and the vanilla Lucide library loaded via CDN.
+        const Lucide = new Proxy({}, {
+            get: (target, prop) => {
+                if (prop === 'default') return target;
+                if (prop === 'icons') return window.lucide?.icons;
+                
+                return ({ size = 24, color = "currentColor", strokeWidth = 2, className = "", ...props }) => {
+                    const ref = useRef(null);
+                    
+                    useEffect(() => {
+                        if (window.lucide) {
+                            window.lucide.createIcons({
+                                root: ref.current?.parentNode,
+                                nameAttr: 'data-lucide',
+                                attrs: {
+                                    width: size,
+                                    height: size,
+                                    stroke: color,
+                                    'stroke-width': strokeWidth,
+                                    class: className
+                                }
+                            });
+                        }
+                    }, [size, color, strokeWidth, className]);
+
+                    // Convert PascalCase (e.g. ShoppingCart) to kebab-case (shopping-cart)
+                    const iconName = prop.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+                    return <i data-lucide={iconName} ref={ref} {...props}></i>;
+                }
+            }
+        });
+
+        // Expose to global scope for generated code
+        window.Lucide = Lucide;
+        const LucideIcons = Lucide; 
+
+        // ------------------------------------------
+
+        // Simple mock for component library
+
+        const ComponentLibrary = {
+           Button: (props) => <button {...props} className={"px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 " + props.className}>{props.children}</button>,
+           Card: (props) => <div {...props} className={"bg-white p-6 rounded-lg shadow-sm border " + props.className}>{props.children}</div>,
+           Input: (props) => <input {...props} className={"w-full p-2 border rounded focus:ring-2 ring-blue-500 " + props.className} />
+        };
+
+        function LoginPage() {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Handle Login Logic
+  const handleLogin = () => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+        setIsLoading(false);
+        alert('Login Successful (Simulation)');
+    }, 2000);
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-black p-4 relative overflow-hidden">
+      
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2"></div>
+
+      {/* Authentication Card */}
+      <Card className="glass w-full max-w-md p-8 rounded-3xl border-white/20 dark:border-white/10 relative z-10 backdrop-blur-xl">
+        
+        <div className="text-center mb-8">
+          <div className="inline-flex justify-center items-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30 mb-6 group">
+             <Lucide.Lock className="w-8 h-8 text-white group-hover:scale-110 transition-transform duration-300" />
+          </div>
+          <h1 className="text-3xl font-extrabold text-foreground mb-2 tracking-tight">Welcome Back</h1>
+          <p className="text-muted-foreground">Enter your credentials to access your account</p>
+        </div>
+        
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Input 
+                label="Email Address" 
+                type="email" 
+                placeholder="name@company.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                icon={Lucide.Mail}
+                className="bg-white/50 dark:bg-black/50 border-transparent focus:border-blue-500 h-12"
+            />
+          </div>
+          
+          <div className="space-y-2">
+              <Input 
+                label="Password" 
+                type="password" 
+                placeholder="••••••••" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                icon={Lucide.Lock}
+                className="bg-white/50 dark:bg-black/50 border-transparent focus:border-blue-500 h-12"
+              />
+              <div className="flex justify-end">
+                  <a href="#" className="text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">Forgot password?</a>
+              </div>
+          </div>
+          
+          <Button 
+            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5" 
+            variant="primary" 
+            size="lg"
+            onClick={handleLogin}
+            loading={isLoading}
+          >
+            Sign In
+          </Button>
+          
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-gray-800"></div></div>
+            <div className="relative flex justify-center text-xs uppercase"><span className="px-3 bg-white/0 text-muted-foreground backdrop-blur-sm">Or continue with</span></div>
+          </div>
+          
+           <div className="grid grid-cols-2 gap-4">
+             <Button variant="outline" className="w-full flex items-center justify-center gap-2 h-10 bg-white/50 hover:bg-white/80 dark:bg-black/50 dark:hover:bg-black/80">
+               <Lucide.Github className="w-4 h-4" /> Github
+             </Button>
+             <Button variant="outline" className="w-full flex items-center justify-center gap-2 h-10 bg-white/50 hover:bg-white/80 dark:bg-black/50 dark:hover:bg-black/80">
+               <Lucide.Twitter className="w-4 h-4 text-blue-400" /> Twitter
+             </Button>
+          </div>
+        </div>
+        
+        <div className="mt-8 text-center text-sm">
+          <span className="text-muted-foreground">Don't have an account? </span>
+          <a href="#" className="font-bold text-blue-600 hover:text-blue-500 dark:text-blue-400 hover:underline transition-colors">Create free account</a>
+        </div>
+      </Card>
+    </div>
+  );
+}
+        
+        // Auto-mount logic
+        const MountPoint = typeof Component !== 'undefined' ? Component : 
+                          (typeof Dashboard !== 'undefined' ? Dashboard : 
+                          (typeof LandingPage !== 'undefined' ? LandingPage : null));
+                          
+        if (MountPoint) {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<MountPoint />);
+        } else {
+             // Try to find any function formatted like a component
+             document.body.innerHTML = '<div style="padding: 20px; color: red;">Could not auto-detect Main Component. Please check console.</div>';
+        }
+    </script>
+</body>
+</html>

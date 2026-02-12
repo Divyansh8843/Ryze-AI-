@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryze Deployment 1d833973</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:,">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>body { margin: 0; background: #f0f2f5; font-family: sans-serif; }</style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Share Toolbar -->
+    <div style="position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; align-items: center; gap: 12px; font-family: system-ui, -apple-system, sans-serif;">
+        <button onclick="copyLink()" id="shareBtn" style="background: #ffffff; color: #000000; border: 1px solid #e5e7eb; padding: 8px 16px; border-radius: 9999px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share
+        </button>
+        <a href="http://localhost:5173" target="_blank" style="text-decoration: none;">
+            <div style="background: #000000; color: #ffffff; padding: 8px 16px; border-radius: 9999px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                Built with Ryze
+            </div>
+        </a>
+    </div>
+    <script>
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href);
+            const btn = document.getElementById('shareBtn');
+            const original = btn.innerHTML;
+            btn.innerHTML = 'Copied!';
+            btn.style.background = '#e5e7eb';
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.style.background = '#ffffff';
+            }, 2000);
+        }
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Lucide React Adapter (Polyfill) ---
+        // This bridges the gap between generated React code (expecting <Lucide.Icon />)
+        // and the vanilla Lucide library loaded via CDN.
+        const Lucide = new Proxy({}, {
+            get: (target, prop) => {
+                if (prop === 'default') return target;
+                if (prop === 'icons') return window.lucide?.icons;
+                
+                return ({ size = 24, color = "currentColor", strokeWidth = 2, className = "", ...props }) => {
+                    // Try to get icon from global Lucide object
+                    const iconName = prop; // PascalCase (e.g. LayoutDashboard)
+                    const iconNode = window.lucide?.icons?.[iconName];
+
+                    if (iconNode) {
+                        const svgHtml = iconNode.toSvg({
+                            width: size,
+                            height: size,
+                            stroke: color,
+                            'stroke-width': strokeWidth,
+                            class: className,
+                            ...props
+                        });
+                        
+                        return <span dangerouslySetInnerHTML={{ __html: svgHtml }} style={{ display: 'inline-flex' }} />;
+                    }
+                    
+                    // Fallback
+                    return <span style={{ width: size, height: size, display: 'inline-block', background: '#ddd' }} title={`Icon ${iconName} not found`} />;
+                }
+            }
+        });
+
+        // Expose to global scope for generated code
+        window.Lucide = Lucide;
+        const LucideIcons = Lucide; 
+
+        // ------------------------------------------
+
+        // Simple mock for component library
+
+        const ComponentLibrary = {
+           Button: (props) => <button {...props} className={"px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 " + props.className}>{props.children}</button>,
+            Card: (props) => <div {...props} className={"bg-white p-6 rounded-lg shadow-sm border " + props.className}>{props.children}</div>,
+            Input: (props) => <input {...props} className={"w-full p-2 border rounded focus:ring-2 ring-blue-500 " + props.className} />,
+            Sidebar: ({ items, activeItem, position, className, ...props }) => (
+                <aside className={"bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 p-4 " + className} {...props}>
+                   <div className="space-y-1">
+                      {items?.map((item, idx) => {
+                          const Icon = window.Lucide[item.icon] || window.Lucide.Circle;
+                          return (
+                              <button key={idx} onClick={item.onClick} className={"w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors " + (activeItem === item.label ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 font-medium' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800')}>
+                                  <Icon size={18} />
+                                  <span>{item.label}</span>
+                              </button>
+                          );
+                      })}
+                   </div>
+                </aside>
+            ),
+            Navbar: ({ brand, links, user, className, ...props }) => (
+                <nav className={"flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-black/80 backdrop-blur-md " + className} {...props}>
+                    <div className="font-bold text-lg tracking-tight">{brand}</div>
+                    <div className="flex items-center gap-6">
+                        {links?.map(l => <a key={l.label} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{l.label}</a>)}
+                        {user && <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full ring-2 ring-gray-100 dark:ring-gray-800" />}
+                    </div>
+                </nav>
+            ),
+            Table: ({ headers, data, className, ...props }) => (
+                <div className={"w-full overflow-auto " + className} {...props}>
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-900/50">
+                            <tr>{headers?.map((h, i) => <th key={i} className="px-6 py-3 font-medium">{h}</th>)}</tr>
+                        </thead>
+                        <tbody>
+                            {data?.map((row, i) => (
+                                <tr key={i} className="bg-white dark:bg-black border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                    {Object.values(row).map((cell, j) => <td key={j} className="px-6 py-4">{cell}</td>)}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ),
+            Chart: ({ type, color, className, ...props }) => (
+                <div className={"flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 " + className} {...props}>
+                    <window.Lucide.BarChart2 className={"w-8 h-8 opacity-50 mb-2 " + (color ? "text-" + color + "-500" : "text-gray-400")} />
+                    <span className="text-xs font-mono text-gray-400 uppercase">Mock {type} Chart</span>
+                </div>
+            )
+        };
+        const { Button, Card, Input, Sidebar, Navbar, Table, Chart } = ComponentLibrary;
+
+        function Dashboard() {
+  const [activeTab, setActiveTab] = React.useState('Overview');
+
+  // Sidebar Items
+  const sidebarItems = [
+    { label: 'Overview', icon: 'LayoutDashboard', onClick: () => setActiveTab('Overview') },
+    { label: 'Analytics', icon: 'BarChart2', onClick: () => setActiveTab('Analytics') },
+    { label: 'Settings', icon: 'Settings', onClick: () => setActiveTab('Settings') }
+  ];
+
+  // Navbar Links
+  const navbarLinks = [
+    { label: 'Help', href: '#' },
+    { label: 'Profile', href: '#' }
+  ];
+  
+  // User Profile
+  const user = {
+    name: "Alex Designer",
+    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d"
+  };
+
+  return (
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black text-foreground font-sans antialiased overflow-hidden">
+      {/* Sidebar Navigation - Glassmorphism */}
+      <Sidebar 
+        items={sidebarItems} 
+        activeItem={activeTab} 
+        position="left" 
+        className="hidden md:flex glass border-none z-10"
+      />
+      
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        <Navbar brand="Ryze AI" links={navbarLinks} user={user} className="sticky top-0 z-10 backdrop-blur-md bg-transparent border-b border-white/10" />
+        
+        {/* Decorative background blobs */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-red-500/20 rounded-full blur-3xl -z-10 translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl -z-10 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+        <main className="flex-1 overflow-y-auto p-6 scroll-smooth">
+          <div className="max-w-7xl mx-auto space-y-6">
+             {/* Header Section */}
+             <div className="flex justify-between items-center mb-6">
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                   <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                     Dashboard Overview
+                   </h1>
+                   <p className="text-muted-foreground mt-2">Welcome back, {user.name}</p>
+                </div>
+                <div className="flex gap-3">
+                   <Button variant="outline" size="sm" className="glass-card hover:bg-white/40">Export Report</Button>
+                   <Button variant="primary" size="sm" className="shadow-lg shadow-red-500/20" onClick={() => alert('Add New Clicked')}>+ Add New</Button>
+                </div>
+             </div>
+             
+             {/* Key Metrics Cards */}
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="glass-card border-none hover:-translate-y-1 transition-transform duration-300">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-red-500/10 rounded-2xl">
+                            <Lucide.Users className="w-6 h-6 text-red-600 dark:text-red-400" />
+                        </div>
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">+12.5%</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                        <h3 className="text-3xl font-bold mt-1 tracking-tight">12,345</h3>
+                    </div>
+                </Card>
+                
+                 <Card className="glass-card border-none hover:-translate-y-1 transition-transform duration-300">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-red-500/10 rounded-2xl">
+                            <Lucide.DollarSign className="w-6 h-6 text-red-600 dark:text-red-400" />
+                        </div>
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">+8.2%</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+                        <h3 className="text-3xl font-bold mt-1 tracking-tight">$45,200</h3>
+                    </div>
+                </Card>
+                
+                 <Card className="glass-card border-none hover:-translate-y-1 transition-transform duration-300">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-red-500/10 rounded-2xl">
+                            <Lucide.Activity className="w-6 h-6 text-red-600 dark:text-red-400" />
+                        </div>
+                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Active</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-muted-foreground">Active Sessions</p>
+                        <h3 className="text-3xl font-bold mt-1 tracking-tight">894</h3>
+                    </div>
+                </Card>
+             </div>
+             
+             {/* Charts & Tables Section */}
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+               <Card className="lg:col-span-2 glass-card border-none" title="Revenue Growth">
+                  <div className="mt-4">
+                    <Chart type="bar" color="red" />
+                  </div>
+               </Card>
+               
+               <Card title="Traffic Sources" className="glass-card border-none">
+                  <div className="mt-4">
+                    <Chart type="pie" color="red" />
+                  </div>
+               </Card>
+             </div>
+             
+             <Card title="Recent Transactions" className="glass-card border-none overflow-hidden">
+               <Table 
+                 headers={["User", "Date", "Amount", "Status"]}
+                 data={[
+                   { user: "John Doe", date: "Oct 24, 2024", amount: "$120.00", status: "Completed" },
+                   { user: "Jane Smith", date: "Oct 23, 2024", amount: "$250.00", status: "Pending" },
+                   { user: "Bob Johnson", date: "Oct 22, 2024", amount: "$99.00", status: "Completed" },
+                   { user: "Alice Brown", date: "Oct 21, 2024", amount: "$450.00", status: "Failed" },
+                 ]}
+                 className="mt-4"
+               />
+            </Card>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+        
+        // Auto-mount logic
+        const candidates = {
+            Component: typeof Component !== 'undefined' ? Component : null,
+            Dashboard: typeof Dashboard !== 'undefined' ? Dashboard : null,
+            LandingPage: typeof LandingPage !== 'undefined' ? LandingPage : null,
+            LoginPage: typeof LoginPage !== 'undefined' ? LoginPage : null,
+            ContactForm: typeof ContactForm !== 'undefined' ? ContactForm : null,
+            App: typeof App !== 'undefined' ? App : null
+        };
+        
+        const MountPoint = Object.values(candidates).find(c => c !== null);
+                          
+        if (MountPoint) {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<MountPoint />);
+        } else {
+             // Try to find any function formatted like a component
+             document.body.innerHTML = '<div style="padding: 20px; color: red;">Could not auto-detect Main Component. Please check console.</div>';
+        }
+    </script>
+</body>
+</html>
