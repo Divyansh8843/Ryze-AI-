@@ -3,7 +3,7 @@
 
 # ⚡ RYZE AI: The Autonomous Code Architect ⚡
 
-![Ryze AI Banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&height=300&section=header&text=Ryze%20AI&fontSize=90&animation=fadeIn&fontAlignY=38&desc=Build%20Apps%20at%20Thought%20Speed%20%7C%20Beyond%20v0%20&descAlignY=51&descAlign=62)
+![Ryze AI Banner](https://capsule-render.vercel.app/api?type=waving&height=300&color=gradient&text=RYZE%20AI&desc=Build%20Apps%20at%20Thought%20Speed%20%7C%20Beyond%20v0%20&descAlignY=67&descAlign=50&animation=scaleIn&fontColor=Black&section=header)
 
 [![Status](https://img.shields.io/badge/Status-Global%20Launch%20Ready-success?style=for-the-badge&logo=rocket)](https://ryze.ai)
 [![AI Engine](https://img.shields.io/badge/AI-Neural%20Orchestrator%20v2.0-blueviolet?style=for-the-badge&logo=openai)](https://openai.com)
