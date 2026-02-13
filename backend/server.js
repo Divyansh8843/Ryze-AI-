@@ -28,7 +28,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com"],
       imgSrc: ["'self'", "data:", "blob:", "https://*"],
       connectSrc: ["'self'", "https://*", "http://localhost:*", "ws://localhost:*"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
     },

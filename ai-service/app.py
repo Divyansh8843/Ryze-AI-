@@ -86,11 +86,9 @@ def modify_ui():
 
     # 1. Extract new style attributes
     new_color = style_extractor.extract_primary_color(prompt)
+    new_brand = style_extractor.extract_brand_name(prompt)
     
     # 2. Apply modifications (Symbolic replacements)
-    # This is a naive implementation but robust for the demo.
-    # It replaces color classes.
-    # Regex replacement for robust color swapping
     import re
     
     # Replace simple color names in text/bg classes
@@ -102,9 +100,6 @@ def modify_ui():
     ]
     
     # Regex to find existing color classes (e.g. bg-blue-500, from-indigo-600)
-    # Group 1: Prefix (bg, text, etc)
-    # Group 2: Color name
-    # Group 3: Shade (100-900)
     pattern = r'\b(bg|text|border|ring|from|to|via|shadow|decoration)-(' + '|'.join(known_colors) + r')-(\d+)\b'
     
     def replacer(match):
@@ -114,10 +109,25 @@ def modify_ui():
         return f"{prefix}-{new_color}-{shade}"
 
     modified_code = re.sub(pattern, replacer, current_code)
-
+    
     explanation_steps = [
         f"- Updated theme color tokens across the component tree to '{new_color}'.",
     ]
+    
+    # 2b. Content Updates (Brand Name / Title)
+    if new_brand and new_brand != "Ryze App": # If a specific brand was detected
+         # Heuristic: Replace content inside <h1> tags or specific brand placeholders
+         # We try to find the old brand name if possible, or just look for typical header patterns.
+         # For simplicity in this deterministic assignment, we'll replace the text in the Navbar brand prop if it exists.
+         if 'brand="' in modified_code:
+             modified_code = re.sub(r'brand="[^"]+"', f'brand="{new_brand}"', modified_code)
+             explanation_steps.append(f"- Renamed application brand to '{new_brand}'.")
+         
+         # Also try to replace <h1> content if it looks like a title
+         # exact logic is tricky without DOM parsing, but we can try a targeted sub for common patterns
+         # or just rely on the user asking precisely. 
+         pass
+
     high_level_plan = [
         f"1. Detected iterative style change request in: '{prompt}'.",
         f"2. Swapped Tailwind color tokens to '{new_color}' while preserving layout and component structure.",

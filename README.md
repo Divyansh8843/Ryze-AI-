@@ -1,138 +1,114 @@
+# Ryze AI: Deterministic UI Generator Agent
 
-<div align="center">
+![Ryze AI Banner](https://capsule-render.vercel.app/api?type=waving&height=250&color=gradient&text=RYZE%20AI&desc=Deterministic%20UI%20Generation%20Agent&animation=fadeIn&fontAlign=50&fontAlignY=40)
 
-# ⚡ RYZE AI: The Autonomous Code Architect ⚡
-
-![Ryze AI Banner](https://capsule-render.vercel.app/api?type=waving&height=300&color=gradient&text=RYZE%20AI&desc=Build%20Apps%20at%20Thought%20Speed%20%7C%20Beyond%20v0%20&descAlignY=67&descAlign=50&animation=scaleIn&fontColor=Black&section=header)
-
-[![Status](https://img.shields.io/badge/Status-Global%20Launch%20Ready-success?style=for-the-badge&logo=rocket)](https://ryze.ai)
-[![AI Engine](https://img.shields.io/badge/AI-Neural%20Orchestrator%20v2.0-blueviolet?style=for-the-badge&logo=openai)](https://openai.com)
-[![Deployment](https://img.shields.io/badge/Deploy-Crash--Proof-orange?style=for-the-badge&logo=vercel)](https://vercel.com)
+[![Status](https://img.shields.io/badge/Status-Submission%20Ready-success?style=for-the-badge&logo=rocket)](https://ryze-ai-agent.vercel.app)
+[![Architecture](https://img.shields.io/badge/Architecture-Heuristic%20Agent-blueviolet?style=for-the-badge&logo=python)](https://github.com/Divyansh8843/Ryze-AI-)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-### 🚀 **"The World's First Self-Correctional AI Coding Agent"**
+## 📋 Project Overview
+**Ryze AI** is an autonomous, deterministic AI agent designed to convert natural language into working, production-ready UI code. Built to simulate the capabilities of tools like **Claude Code**, Ryze prioritizes **safety, reproducibility, and visual consistency** over open-ended generation.
 
-*Built for Visionaries. Engineered for Perfection. More Advanced than Cursor, v0, and Lovable.*
-
-[View Demo](#-live-demo) • [Key Features](#-key-features) • [Installation](#-installation) • [Docs](#-documentation)
-
-</div>
-
----
-
-## 🔮 What is Ryze AI?
-
-**Ryze AI** is not just a chatbot. It is a **Pro-Grade Autonomous Developer** that lives in your browser. It doesn't just write snippets; it **architects entire applications**, refactors complex codebases structure-by-structure, and deploys crash-proof websites instantly.
-
-> **"Imagine if Cursor and v0 had a child, and that child was a Senior Architect."**
+This project was built as a **72-hour time-boxed assignment** to demonstrate:
+- **Agentic Workflow**: Planner → Generator → Explainer.
+- **Deterministic UI**: A fixed, robust component system.
+- **Iterative Refinement**: Modifying code without breaking it.
 
 ---
 
-## ✨ Key Features (The "Trillion Dollar" Suite)
+## 🏗️ Architecture
+Ryze AI follows a strictly decoupled microservices architecture:
 
-### 🧠 **1. Neural Orchestrator Engine**
-Unlike other AIs that guess, Ryze **plans**.
-- **Type:** *"Create a SaaS Landing Page"*
-- **Ryze:** Instantly generates a responsive Navbar, conversion-optimized Hero, Feature Grid, Testimonials, and Footer—all perfectly linked.
+1.  **Frontend (React + Vite)**:
+    - **Dual-Pane IDE**: Chat interface on the left, Code/Preview on the right.
+    - **Live Compiler**: Uses `@babel/standalone` to render React code in the browser securely.
+    - **Sandboxed Execution**: Prevents CSS leakage and ensures style isolation.
 
-### 🎨 **2. Context-Aware Code Refactoring**
-Ryze understands your code's *intent*.
-- **Task:** *"Change the theme to Rose and add a Sidebar."*
-- **Result:** Ryze surgically modifies your centralized theme tokens and injects a fully functional, responsive Sidebar component without breaking existing logic.
+2.  **Gateway (Node.js + Express)**:
+    - **API Orchestration**: Proxies requests to the AI Engine.
+    - **Persistence Layer**: MongoDB storage for deployment history and user sessions.
+    - **Deployment Manager**: Generates standalone HTML artifacts for global sharing.
 
-### 🛡️ **3. Crash-Proof Deployment (Lucide Adapter 2.0)**
-We solved the "White Screen of Death".
-- Our proprietary **Mock Component Engine** ensures that every generated app—no matter how complex—renders perfectly in standalone HTML. 
-- **Zero Runtime Errors. 100% Uptime.**
-
-### 🖥️ **4. Pro-Grade IDE Interface**
-Built for power users.
-- **Dual-Resizable Panels:** Drag to resize your Chat History AND your Code Editor independently.
-- **Live Preview:** See changes in real-time with millisecond latency.
-- **Smart History:** Never lose a prompt with our persistent conversation memory.
+3.  **AI Engine (Python + Flask)**:
+    - **The "Brain"**: A deterministic heuristic engine (Symbolic NLP).
+    - **No Hallucinations**: Uses rule-based entity extraction and template mapping instead of probabilistic LLM token generation for core structural logic.
+    - **State Awareness**: capable of parsing existing code and injecting new components contextually.
 
 ---
 
-## 🛠️ The Tech Stack
+## 🤖 Agent Design
+The core "AI" is implemented not as a black-box LLM, but as a transparent, multi-step agent:
 
-| Component | Technology | Description |
-| :--- | :--- | :--- |
-| **Brain** | **Python (Flask)** | Advanced Heuristic Logic & Neural Processing |
-| **Core** | **React 18** | High-performance UI rendering |
-| **Style** | **Tailwind CSS** | Utility-first styling engine |
-| **Compiler** | **Babel Standalone** | In-browser JavaScript compilation |
-| **Icons** | **Lucide React** | Beautiful, consistent iconography |
+### Step 1: 🧠 Planner
+- **Intent Classification**: Analyzes the prompt to classify it into categories (e.g., `dashboard`, `landing_page`, `login`).
+- **Entity Extraction**: Identifies key design tokens:
+  - **Colors**: "Make it *emerald*" → `emerald-500`
+  - **Brand Name**: "Call it *FinTech Pro*" → `FinTech Pro`
+  - **Components**: "Add a *sidebar*" → `Sidebar` injection flag.
 
----
+### Step 2: ⚙️ Generator
+- **Template Selection**: Fetches the validated, accessible base template for the detected intent.
+- **Token Injection**: Fills the template with extracted entities (e.g., replacing `{{PRIMARY_COLOR}}` with `emerald`).
+- **Component Composition**: Assembles the view using the **Fixed Component Library**.
 
-## 📦 Installation & Setup
-
-Get running in **3 Minutes**.
-
-### 1. Clone the Repo
-```bash
-git clone https://github.com/Divyansh8843/Ryze-AI-.git
-cd Ryze-AI-
-```
-
-### 2. Ignite the AI Brain 🧠
-```bash
-cd ai-service
-# Install dependencies
-pip install flask flask-cors
-# Start the Neural Engine
-python app.py
-```
-*> Listening on port 5001...*
-
-### 3. Start the Gateway 🌐
-```bash
-cd ../backend
-npm install && npm start
-```
-*> Listening on port 5000...*
-
-### 4. Launch the Interface 🚀
-```bash
-cd ../frontend
-npm install && npm run dev
-```
-*> Open http://localhost:5173*
+### Step 3: 🗣️ Explainer
+- **Reasoning Output**: Generates a human-readable explanation of *why* specific decisions were made.
+- **Plan Visualization**: Returns the structured plan (e.g., "1. Detected Intent: Dashboard. 2. Applied Theme: Emerald.").
 
 ---
 
-## 💡 Pro Tips for Power Users
+## 🧩 Component System Design
+To satisfy the **Core Constraint**, Ryze AI uses a **Strict Component Library**. The AI *cannot* write arbitrary HTML or CSS classes. It must use:
 
-<details>
-<summary><strong>Click to reveal Advanced Prompts</strong></summary>
+- **`<Button />`**: Standardized interactive element.
+- **`<Card />`**: Container for grouping content.
+- **`<Input />`**: User data entry.
+- **`<Table />`**: structured data display.
+- **`<Navbar />`**: Consistent top-level navigation.
+- **`<Sidebar />`**: Vertical navigation pattern.
+- **`<Chart />`**: Data visualization (Mocked).
 
-1.  **The "Full Stack" Prompt:**
-    > *"Create a complete Dashboard for a Fintech startup with a dark theme, a sidebar navigation, a data table for transactions, and a line chart for revenue."*
-
-2.  **The "Refactor" Prompt:**
-    > *"Change the primary color to Emerald-500, add a 'Settings' page link to the sidebar, and make the header sticky."*
-
-3.  **The "Deployment" Action:**
-    > Click the **Deploy** button instantly to get a shareable link.
-</details>
-
----
-
-## 🤝 Contributing
-
-Join the revolution. We are building the future of software development.
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+**Constraint Enforcement**:
+The Python engine's regex operations are tuned to only inject these specific component strings. The Frontend's Babel scope *only* exposes these components, ensuring that any hallucinated component would result in a clear error (or no render), forcing correctness.
 
 ---
 
-<div align="center">
+## 🔄 Iteration & Modification
+Ryze AI supports **Incremental Edits**. It does NOT regenerate the entire file on every turn.
 
-**Built with ❤️ and Neural Networks by Divyansh**
+**Example Flow**:
+1.  **User**: "Create a blue dashboard."
+    - **Agent**: Generates full `Dashboard` code with `blue-600` theme.
+2.  **User**: "Make it dark node and add a sidebar."
+    - **Agent**:
+        - Parses existing code.
+        - **Regex Swap**: Updates global theme tokens.
+        - **Injection**: Locates the layout wrapper and inserts `<Sidebar />` without touching the inner content.
+        - **Result**: The original data/structure is preserved; only the requested changes are applied.
 
-*"Code at the speed of thought."*
+---
 
-</div>
+## 🚀 Known Limitations & Tradeoffs
+- **Heuristic NLP**: The current NLP engine is rule-based. It excels at specific keywords ("dashboard", "blue", "add footer") but may struggle with abstract nuances like "make it feel more cozy".
+- **Template Rigidity**: The layout structure is robust but finite. It cannot invent entirely new layout paradigms outside its template library.
+- **Regex Parsing**: Iterative modification relies on regex matching. Highly complex, nested code structures might occasionally confuse the insertion logic.
+
+## 🔮 Future Improvements
+With more time, I would implement:
+1.  **AST Parsing (Abstract Syntax Tree)**: Replace regex with real AST manipulation (e.g., using `libcst` in Python) for surgical code edits.
+2.  **LLM "Function Calling"**: Integrate a real LLM (e.g., GPT-4o) specifically for the *Planner* step to handle abstract intents, while keeping the *Generator* deterministic.
+3.  **Component Props Schema**: A strict JSON schema ensuring every generated prop is valid against the component definition.
+
+---
+
+## 📦 Setup & Deployment
+
+1.  **Clone**: `git clone https://github.com/Divyansh8843/Ryze-AI-.git`
+2.  **Backend**: `cd backend && npm install && npm start`
+3.  **AI Service**: `cd ai-service && pip install flask flask-cors && python app.py`
+4.  **Frontend**: `cd frontend && npm install && npm run dev`
+
+**Deployed URL**: [https://ryze-ai-agent.vercel.app](https://ryze-ai-agent.vercel.app)
+
+---
+*Submitted by Divyansh for Ryze AI Assignment.*
