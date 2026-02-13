@@ -73,7 +73,16 @@ exports.modifyUI = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("AI Service Error:", error.message);
-    res.status(500).json({ error: "Modification failed." });
+    if (error.response) {
+         console.error("AI Service Response:", error.response.data);
+         return res.status(error.response.status).json(error.response.data);
+    }
+    if (error.code === 'ECONNREFUSED') {
+         return res.status(503).json({ 
+             error: "AI Service Unavailable. Please ensure the Python service is running on port 5001." 
+         });
+    }
+    res.status(500).json({ error: "Modification failed.", details: error.message });
   }
 };
 

@@ -592,11 +592,19 @@ export default function App() {
          });
       } else {
          setStatus('⚛️ Compiling React Component...');
+         
+         // Free Tier Cold Start Notification
+         const coldStartTimer = setTimeout(() => {
+             setStatus('⏳ Waking up AI Agent (Free Tier Cold Start)... please wait up to 60s');
+         }, 8000);
+
          response = await axios.post(`${API_URL}/generate`, {
              prompt: promptToUse
          }, {
             timeout: 300000 // 5 minutes
          });
+         
+         clearTimeout(coldStartTimer);
       }
 
       const { plan, code, explanation } = response.data;

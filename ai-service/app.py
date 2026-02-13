@@ -9,7 +9,9 @@ from logic.templates import TEMPLATES_MAP, PRICING_SECTION_SNIPPET
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 app = Flask(__name__)
-CORS(app) # Enable CORS for all routes
+# Enable CORS for all routes and origins (Critical for Render microservices)
+CORS(app, resources={r"/*": {"origins": "*"}})
+app.logger.info("CORS Enabled for all origins")
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -329,5 +331,6 @@ def modify_ui():
 
 
 if __name__ == '__main__':
-    print("Starting Python AI Service on port 5001...")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    port = int(os.environ.get('PORT', 5001))
+    print(f"Starting Python AI Service on port {port}...")
+    app.run(host='0.0.0.0', port=port, debug=True)
