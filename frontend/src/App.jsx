@@ -462,7 +462,11 @@ export default function App() {
           await new Promise(r => setTimeout(r, 600));
           setStatus('📦 bundling_assets...');
           
-          const res = await axios.post(DEPLOY_URL, { code: currentCode });
+          const deployPrompt = currentItem?.prompt || history.find(m => m.role === 'user')?.content || 'React Component';
+          const res = await axios.post(DEPLOY_URL, { 
+              code: currentCode,
+              prompt: deployPrompt
+          });
           const liveUrl = res.data.url;
           
           await new Promise(r => setTimeout(r, 800));
@@ -477,14 +481,9 @@ export default function App() {
           
       } catch (err) {
           console.error("Deployment Failed:", err);
-          // Fallback Simulation
-          setStatus('⚠️ Backend deploy failed. Simulating...');
-          setTimeout(() => {
-              const fakeUrl = `https://ryze-app-${Math.random().toString(36).substring(7)}.vercel.app`;
-              alert(`Real deployment service unavailable.\nSimulation URL: ${fakeUrl}`);
-              setLoading(false);
-              setStatus('');
-          }, 1500);
+          setStatus('⚠️ Deployment failed. Please try again.');
+          alert(`Deployment Failed: ${err.response?.data?.error || err.message}`);
+          setTimeout(() => setStatus(''), 5000);
       }
   };
 

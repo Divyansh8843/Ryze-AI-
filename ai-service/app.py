@@ -6,6 +6,8 @@ from flask_cors import CORS
 from logic.nlp_engine import classifier, style_extractor
 from logic.templates import TEMPLATES_MAP, PRICING_SECTION_SNIPPET
 
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes
 
@@ -481,7 +483,7 @@ def deploy_project():
         f.write(final_html)
         
     # Return localhost URL
-    return jsonify({"url": f"http://localhost:5001/view/{filename}"})
+    return jsonify({"url": f"{FRONTEND_URL}/view/{filename}"})
 
 @app.route('/view/<filename>')
 def view_deployment(filename):

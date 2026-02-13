@@ -19,6 +19,7 @@ connectDB();
 const app = express();
 
 // Security & Performance Middleware
+app.enable('trust proxy'); // Ensure req.protocol detects HTTPS on Render/Vercel
 app.use(helmet());
 app.use(compression());
 app.use(morgan('dev')); // Logger
@@ -49,52 +50,16 @@ app.use('/api/github', githubRoutes);
 // Reverse Proxy to Python AI Service (Port 5001) for Direct Access
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5001';
 
-// Proxy Deployment Request
-app.post('/deploy', async (req, res) => {
-  try {
-    const response = await axios.post(`${AI_SERVICE_URL}/deploy`, req.body);
-    res.json(response.data);
-  } catch (error) {
-    console.error('[Proxy Error] /deploy:', error.message);
-    res.status(500).json({ error: 'Deployment Service Unavailable' });
-  }
-});
+const generatorController = require('./controllers/generator.controller');
 
-// Proxy View Request (HTML Content)
-app.get('/view/:filename', async (req, res) => {
-  try {
-    const response = await axios.get(`${AI_SERVICE_URL}/view/${req.params.filename}`, {
-      responseType: 'arraybuffer' // Handle binary/text content correctly
-    });
-    res.set(response.headers);
-    res.send(response.data);
-  } catch (error) {
-    console.error('[Proxy Error] /view:', error.message);
-    res.status(404).send('Deployment Not Found');
-  }
-});
+// Persistent Deployment Routes (Handled by Node Controller + MongoDB)
+app.post('/deploy', generatorController.deployUI);
+app.get('/view/:id', generatorController.viewDeployment);
+app.get('/download/:id', generatorController.downloadDeployment);
 
-// Proxy Generate Request (for direct /generate calls)
-app.post('/generate', async (req, res) => {
-  try {
-    const response = await axios.post(`${AI_SERVICE_URL}/generate`, req.body);
-    res.json(response.data);
-  } catch (error) {
-    console.error('[Proxy Error] /generate:', error.message);
-    res.status(500).json({ error: 'Generation Service Unavailable' });
-  }
-});
+// Direct AI Service Proxies (kept for legacy/direct access if needed, but primary flow is via /api/generator)
+// Note: Frontend uses /api/generator/generate and /api/generator/modify provided by generatorRoutes
 
-// Proxy Modify Request (for AI Refactoring/Edits)
-app.post('/modify', async (req, res) => {
-  try {
-    const response = await axios.post(`${AI_SERVICE_URL}/modify`, req.body);
-    res.json(response.data);
-  } catch (error) {
-    console.error('[Proxy Error] /modify:', error.message);
-    res.status(500).json({ error: 'Modification Service Unavailable' });
-  }
-});
 
 // Health Check
 app.get('/health', (req, res) => {

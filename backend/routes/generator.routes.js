@@ -14,4 +14,9 @@ router.post('/share', generatorController.shareUI);
 // Public read-only endpoint for shared UIs
 router.get('/share/:slug', generatorController.getSharedUI);
 
+// Persistent Deployment (HTML Storage)
+router.post('/deploy', generatorController.deployUI);
+router.get('/view/:id', generatorController.viewDeployment);
+router.get('/download/:id', generatorController.downloadDeployment);
+
 module.exports = router;
