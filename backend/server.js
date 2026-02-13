@@ -20,7 +20,21 @@ const app = express();
 
 // Security & Performance Middleware
 app.enable('trust proxy'); // Ensure req.protocol detects HTTPS on Render/Vercel
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdn.tailwindcss.com", "https://*.reactjs.org", "https://*.jsdelivr.net", "blob:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://*"],
+      connectSrc: ["'self'", "https://*", "http://localhost:*", "ws://localhost:*"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow cross-origin resources
+}));
 app.use(compression());
 app.use(morgan('dev')); // Logger
 app.use((req, res, next) => {
