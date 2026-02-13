@@ -20,9 +20,17 @@ def internal_error(error):
     app.logger.error(f"Server Error: {error}")
     return jsonify({"error": "Internal Server Error", "details": str(error)}), 500
 
+from werkzeug.exceptions import HTTPException
+
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({"message": "Ryze AI Service Running", "docs": "/api/generator/generate"}), 200
+
 @app.errorhandler(Exception)
 def handle_exception(e):
-    app.logger.error(f"Unhandled Exception: {e}")
+    if isinstance(e, HTTPException):
+        return jsonify({"error": e.name, "details": e.description}), e.code
+    app.logger.error(f"Unhandled Exception: {e}", exc_info=True)
     return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 @app.route('/generate', methods=['POST'])
@@ -35,25 +43,38 @@ def generate_ui():
     Returns: { "plan": "...", "code": "...", "explanation": "..." }
     """
     start_time = time.time()
-    data = request.json
+    if not request.is_json:
+        app.logger.warning("Request content-type is not JSON or body is empty.")
+        # Attempt to parse anyway if content-type is missing but body exists
+        data = request.get_json(force=True, silent=True)
+    else:
+        data = request.json
+    
+    if data is None:
+        return jsonify({"error": "Invalid JSON or empty body"}), 400
+
     prompt = data.get('prompt', '')
     
     if not prompt:
         return jsonify({"error": "Prompt is required"}), 400
 
-    # 1. Intent Classification (AI Fundamentals)
-    intent = classifier.predict(prompt)
-    
-    # 2. Entity Extraction (Rule-based NLP)
-    primary_color = style_extractor.extract_primary_color(prompt)
-    brand_name = style_extractor.extract_brand_name(prompt)
-    
-    # 3. Template Selection & Filling (Deterministic Generation)
-    raw_template = TEMPLATES_MAP.get(intent, TEMPLATES_MAP['dashboard'])
-    
-    # Simple Jinja-like replacement
-    generated_code = raw_template.replace("{{PRIMARY_COLOR}}", primary_color)
-    generated_code = generated_code.replace("{{BRAND_NAME}}", brand_name)
+    try:
+        # 1. Intent Classification (AI Fundamentals)
+        intent = classifier.predict(prompt)
+        
+        # 2. Entity Extraction (Rule-based NLP)
+        primary_color = style_extractor.extract_primary_color(prompt)
+        brand_name = style_extractor.extract_brand_name(prompt)
+        
+        # 3. Template Selection & Filling (Deterministic Generation)
+        raw_template = TEMPLATES_MAP.get(intent, TEMPLATES_MAP['dashboard'])
+        
+        # Simple Jinja-like replacement
+        generated_code = raw_template.replace("{{PRIMARY_COLOR}}", primary_color)
+        generated_code = generated_code.replace("{{BRAND_NAME}}", brand_name)
+    except Exception as e:
+        app.logger.error(f"Generation Logic Failed: {str(e)}", exc_info=True)
+        return jsonify({"error": "Generation Failed", "details": str(e)}), 500
     
     # 4. Construct Response
     processing_time = round((time.time() - start_time) * 1000, 2)
@@ -90,7 +111,14 @@ def modify_ui():
     Endpoint for iterative refinement.
     Receives: { "prompt": "Make it green", "currentCode": "..." }
     """
-    data = request.json
+    if not request.is_json:
+        data = request.get_json(force=True, silent=True)
+    else:
+        data = request.json
+        
+    if data is None:
+        return jsonify({"error": "Invalid JSON"}), 400
+
     prompt = data.get('prompt', '')
     current_code = data.get('currentCode', '')
     

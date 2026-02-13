@@ -105,7 +105,7 @@ With more time, I would implement:
 
 1.  **Clone**: `git clone https://github.com/Divyansh8843/Ryze-AI-.git`
 2.  **Backend**: `cd backend && npm install && npm start`
-3.  **AI Service**: `cd ai-service && pip install flask flask-cors && python app.py`
+3.  **AI Service**: `cd ai-service && pip install -r requirements.txt && python app.py`
 4.  **Frontend**: `cd frontend && npm install && npm run dev`
 
 **Deployed URL**: [https://ryze-ai-agent.vercel.app](https://ryze-ai-agent.vercel.app)

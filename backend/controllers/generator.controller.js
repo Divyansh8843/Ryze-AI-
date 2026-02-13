@@ -15,6 +15,7 @@ exports.generateUI = async (req, res) => {
   }
   try {
     console.log(`[Node] Calling Python AI Service (Generate) for intent: ${prompt}`);
+    console.log(`[Node] Target URL: ${AI_SERVICE_URL}`);
 
     // Forward request to Python Microservice
     const response = await axios.post(`${AI_SERVICE_URL}/generate`, {
@@ -62,6 +63,7 @@ exports.modifyUI = async (req, res) => {
 
   try {
     console.log(`[Node] Calling Python AI Service (Modify) for: ${prompt}`);
+    console.log(`[Node] Target URL: ${AI_SERVICE_URL}`);
 
     const response = await axios.post(`${AI_SERVICE_URL}/modify`, {
       prompt,
@@ -354,6 +356,10 @@ exports.deployUI = async (req, res) => {
             Dashboard: typeof Dashboard !== 'undefined' ? Dashboard : null,
             LandingPage: typeof LandingPage !== 'undefined' ? LandingPage : null,
             LoginPage: typeof LoginPage !== 'undefined' ? LoginPage : null,
+            ContactForm: typeof ContactForm !== 'undefined' ? ContactForm : null,
+            Portfolio: typeof Portfolio !== 'undefined' ? Portfolio : null,
+            EcommerceProduct: typeof EcommerceProduct !== 'undefined' ? EcommerceProduct : null,
+            GenericPage: typeof GenericPage !== 'undefined' ? GenericPage : null,
             App: typeof App !== 'undefined' ? App : null
         };
         const MountPoint = Object.values(candidates).find(c => c !== null);
