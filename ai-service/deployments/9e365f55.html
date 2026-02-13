@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryze Deployment 9e365f55</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:,">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>body { margin: 0; background: #f0f2f5; font-family: sans-serif; }</style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Share Toolbar -->
+    <div style="position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; align-items: center; gap: 12px; font-family: system-ui, -apple-system, sans-serif;">
+        <button onclick="copyLink()" id="shareBtn" style="background: #ffffff; color: #000000; border: 1px solid #e5e7eb; padding: 8px 16px; border-radius: 9999px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share
+        </button>
+        <a href="http://localhost:5173" target="_blank" style="text-decoration: none;">
+            <div style="background: #000000; color: #ffffff; padding: 8px 16px; border-radius: 9999px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                Built with Ryze
+            </div>
+        </a>
+    </div>
+    <script>
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href);
+            const btn = document.getElementById('shareBtn');
+            const original = btn.innerHTML;
+            btn.innerHTML = 'Copied!';
+            btn.style.background = '#e5e7eb';
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.style.background = '#ffffff';
+            }, 2000);
+        }
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Lucide React Adapter (Polyfill) ---
+        // This bridges the gap between generated React code (expecting <Lucide.Icon />)
+        // and the vanilla Lucide library loaded via CDN.
+        const Lucide = new Proxy({}, {
+            get: (target, prop) => {
+                if (prop === 'default') return target;
+                if (prop === 'icons') return window.lucide?.icons;
+                
+                return ({ size = 24, color = "currentColor", strokeWidth = 2, className = "", ...props }) => {
+                    // Try to get icon from global Lucide object
+                    const iconName = prop; // PascalCase (e.g. LayoutDashboard)
+                    const iconNode = window.lucide?.icons?.[iconName];
+
+                    if (iconNode && window.lucide?.createElement) {
+                        try {
+                            const svgEl = window.lucide.createElement(iconNode);
+                            
+                            // Apply attributes manually since createElement returns a DOM node
+                            svgEl.setAttribute('width', size);
+                            svgEl.setAttribute('height', size);
+                            svgEl.setAttribute('stroke', color);
+                            svgEl.setAttribute('stroke-width', strokeWidth);
+                            if (className) svgEl.setAttribute('class', className);
+                            
+                            // Apply other props
+                            Object.entries(props).forEach(([key, val]) => {
+                                if (val !== undefined && key !== 'children') {
+                                    // Convert camelCase to kebab-case for attributes if needed, or just set
+                                    const attrKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                                    svgEl.setAttribute(attrKey, val);
+                                }
+                            });
+
+                            return <span dangerouslySetInnerHTML={{ __html: svgEl.outerHTML }} style={{ display: 'inline-flex' }} />;
+                        } catch (e) {
+                            console.warn("Lucide rendering failed:", e);
+                        }
+                    }
+                    
+                    // Fallback
+                    return <span style={{ width: size, height: size, display: 'inline-block', background: '#ddd' }} title={`Icon ${iconName} not found`} />;
+                }
+            }
+        });
+
+        // Expose to global scope for generated code
+        window.Lucide = Lucide;
+        const LucideIcons = Lucide; 
+
+        // ------------------------------------------
+
+        // Simple mock for component library
+
+        const ComponentLibrary = {
+           Button: (props) => <button {...props} className={"px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 " + props.className}>{props.children}</button>,
+            Card: (props) => <div {...props} className={"bg-white p-6 rounded-lg shadow-sm border " + props.className}>{props.children}</div>,
+            Input: (props) => <input {...props} className={"w-full p-2 border rounded focus:ring-2 ring-blue-500 " + props.className} />,
+            Sidebar: ({ items, activeItem, position, className, ...props }) => (
+                <aside className={"bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 p-4 " + className} {...props}>
+                   <div className="space-y-1">
+                      {items?.map((item, idx) => {
+                          const Icon = window.Lucide[item.icon] || window.Lucide.Circle;
+                          return (
+                              <button key={idx} onClick={item.onClick} className={"w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors " + (activeItem === item.label ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 font-medium' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800')}>
+                                  <Icon size={18} />
+                                  <span>{item.label}</span>
+                              </button>
+                          );
+                      })}
+                   </div>
+                </aside>
+            ),
+            Navbar: ({ brand, links, user, className, ...props }) => (
+                <nav className={"flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-black/80 backdrop-blur-md " + className} {...props}>
+                    <div className="font-bold text-lg tracking-tight">{brand}</div>
+                    <div className="flex items-center gap-6">
+                        {links?.map(l => <a key={l.label} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{l.label}</a>)}
+                        {user && <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full ring-2 ring-gray-100 dark:ring-gray-800" />}
+                    </div>
+                </nav>
+            ),
+            Table: ({ headers, data, className, ...props }) => (
+                <div className={"w-full overflow-auto " + className} {...props}>
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-900/50">
+                            <tr>{headers?.map((h, i) => <th key={i} className="px-6 py-3 font-medium">{h}</th>)}</tr>
+                        </thead>
+                        <tbody>
+                            {data?.map((row, i) => (
+                                <tr key={i} className="bg-white dark:bg-black border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                    {Object.values(row).map((cell, j) => <td key={j} className="px-6 py-4">{cell}</td>)}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ),
+            Chart: ({ type, color, className, ...props }) => (
+                <div className={"flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 " + className} {...props}>
+                    <window.Lucide.BarChart2 className={"w-8 h-8 opacity-50 mb-2 " + (color ? "text-" + color + "-500" : "text-gray-400")} />
+                    <span className="text-xs font-mono text-gray-400 uppercase">Mock {type} Chart</span>
+                </div>
+            )
+        };
+        const { Button, Card, Input, Sidebar, Navbar, Table, Chart } = ComponentLibrary;
+
+        function LandingPage() {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+  // Smooth scroll
+  const scrollTo = (id) => {
+    const element = document.getElementById(id);
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
+    setIsMenuOpen(false);
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-background font-sans text-foreground selection:bg-blue-500/30">
+      
+      {/* Navigation */}
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <div className="bg-gradient-to-tr from-blue-600 to-purple-600 p-2 rounded-xl">
+               <Lucide.Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <span className="font-bold text-xl tracking-tight">Ryze AI</span>
+          </div>
+          
+          <div className="hidden md:flex gap-8 items-center">
+            {['Features', 'Testimonials', 'Pricing'].map((item) => (
+               <button key={item} onClick={() => scrollTo(item.toLowerCase())} className="text-sm font-medium text-muted-foreground hover:text-blue-600 transition-colors">
+                  {item}
+               </button>
+            ))}
+            <Button variant="primary" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25">
+               Get Started
+            </Button>
+          </div>
+
+          <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+             {isMenuOpen ? <Lucide.X className="h-6 w-6" /> : <Lucide.Menu className="h-6 w-6" />}
+          </button>
+        </div>
+        
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+           <div className="md:hidden p-4 border-t bg-background space-y-4 animate-in slide-in-from-top-2">
+              {['Features', 'Testimonials', 'Pricing'].map((item) => (
+                 <button key={item} onClick={() => scrollTo(item.toLowerCase())} className="block w-full text-left py-2 font-medium">
+                    {item}
+                 </button>
+              ))}
+               <Button className="w-full bg-blue-600 text-white">Get Started</Button>
+           </div>
+        )}
+      </header>
+      
+      <main className="flex-1">
+      
+        {/* Hero Section */}
+        <section className="relative pt-24 pb-32 overflow-hidden">
+           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+           
+           <div className="container mx-auto px-4 text-center">
+              <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 px-3 py-1 text-sm font-medium text-blue-600 dark:text-blue-400 mb-6 backdrop-blur-sm">
+                 <span className="flex h-2 w-2 rounded-full bg-blue-600 mr-2 animate-pulse"></span>
+                 New Version 2.0 Released
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/60 mb-6">
+                 Build faster with <br className="hidden md:block"/>
+                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Ryze AI</span>
+              </h1>
+              
+              <p className="mx-auto max-w-[700px] text-lg text-muted-foreground mb-10 leading-relaxed">
+                 The ultimate platform for modern developers. Deterministic, scalable, and built for performance. Start building your dream project today.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                 <Button size="lg" className="h-12 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20 hover:scale-105 transition-transform">
+                    Start Building Free
+                 </Button>
+                 <Button size="lg" variant="outline" className="h-12 px-8 text-base hover:bg-muted/50 backdrop-blur-sm">
+                    <Lucide.Play className="mr-2 h-4 w-4" /> Watch Demo
+                 </Button>
+              </div>
+              
+              {/* Hero Image / Dashboard Preview */}
+              <div className="mt-20 relative mx-auto max-w-5xl">
+                 <div className="rounded-xl border bg-background/50 backdrop-blur shadow-2xl overflow-hidden p-2 ring-1 ring-inset ring-foreground/10">
+                    <div className="rounded-lg bg-foreground/5 aspect-[16/9] flex items-center justify-center relative overflow-hidden group">
+                       <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                       {/* Mock UI Elements */}
+                       <div className="w-[80%] h-[80%] bg-white dark:bg-black rounded-lg shadow-xl border border-border flex">
+                          <div className="w-1/4 h-full border-r border-border p-4 space-y-2 hidden md:block">
+                             <div className="h-2 w-1/2 bg-muted rounded mb-6"></div>
+                             {[1,2,3,4].map(i => <div key={i} className="h-8 w-full bg-muted/50 rounded"></div>)}
+                          </div>
+                          <div className="flex-1 p-6 space-y-4">
+                             <div className="h-8 w-1/3 bg-muted rounded mb-8"></div>
+                             <div className="grid grid-cols-2 gap-4">
+                                <div className="h-32 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded"></div>
+                                <div className="h-32 bg-purple-50/50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800 rounded"></div>
+                             </div>
+                             <div className="h-40 bg-muted/30 rounded border border-border"></div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+                 <div className="absolute -z-10 -bottom-10 -right-10 w-64 h-64 bg-purple-500/30 rounded-full blur-[80px] pointer-events-none"></div>
+                 <div className="absolute -z-10 -top-10 -left-10 w-64 h-64 bg-blue-500/30 rounded-full blur-[80px] pointer-events-none"></div>
+              </div>
+           </div>
+        </section>
+        
+        {/* Features Grid */}
+        <section id="features" className="py-24 bg-muted/30 relative">
+           <div className="container mx-auto px-4">
+              <div className="text-center max-w-3xl mx-auto mb-16">
+                 <h2 className="text-3xl font-bold tracking-tight mb-4">Everything you need to scale</h2>
+                 <p className="text-muted-foreground text-lg">Powerful features configured for production. Security, performance, and reliability out of the box.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                 {[
+                    { title: "Deterministic AI", icon: Lucide.Brain, desc: "Zero hallucinations. Guaranteed valid code generation every time." },
+                    { title: "Glassmorphism UI", icon: Lucide.Layers, desc: "Premium styling with blur effects and dynamic gradients built-in." },
+                    { title: "Secure by Default", icon: Lucide.ShieldCheck, desc: "Enterprise-grade security standards with automated compliance." },
+                    { title: "Microservices", icon: Lucide.Server, desc: "Independently scalable architecture for frontend, gateway, and engine." },
+                    { title: "Real-time Sync", icon: Lucide.RefreshCw, desc: "Instant state synchronization across all connected clients." },
+                    { title: "Global CDN", icon: Lucide.Globe, desc: "Deployed on edge networks for sub-millisecond latency worldwide." }
+                 ].map((feature, i) => (
+                    <div key={i} className="group relative overflow-hidden rounded-2xl border bg-background p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <feature.icon className="w-24 h-24 text-blue-500" />
+                       </div>
+                       <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/20 p-3 text-blue-600">
+                          <feature.icon className="h-6 w-6" />
+                       </div>
+                       <h3 className="mb-2 text-xl font-bold">{feature.title}</h3>
+                       <p className="text-muted-foreground">{feature.desc}</p>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </section>
+        
+        {/* How It Works Section */}
+        <section className="py-24 bg-background relative overflow-hidden">
+           <div className="container mx-auto px-4">
+              <div className="text-center max-w-3xl mx-auto mb-16">
+                 <h2 className="text-3xl font-bold tracking-tight mb-4">How it works</h2>
+                 <p className="text-muted-foreground text-lg">Three simple steps to launch your next big idea.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                 {/* Connecting Line */}
+                 <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-transparent via-blue-200 dark:via-blue-800 to-transparent -z-10"></div>
+                 
+                 {[
+                    { step: "01", title: "Connect", desc: "Integrate with your existing data sources in minutes." },
+                    { step: "02", title: "Configure", desc: "Customize the logic and UI to match your brand requirements." },
+                    { step: "03", title: "Deploy", desc: "Launch globally with a single click to our edge network." }
+                 ].map((item, i) => (
+                    <div key={i} className="flex flex-col items-center text-center group">
+                       <div className="w-24 h-24 rounded-full bg-white dark:bg-gray-900 border-4 border-blue-50 dark:border-blue-900/30 flex items-center justify-center text-2xl font-bold text-blue-600 shadow-xl mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10">
+                          {item.step}
+                       </div>
+                       <h3 className="text-xl font-bold mb-3">{item.title}</h3>
+                       <p className="text-muted-foreground leading-relaxed max-w-xs">{item.desc}</p>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </section>
+
+        {/* Pricing CTA */}
+        <section id="pricing" className="py-24 relative overflow-hidden">
+           <div className="container mx-auto px-4">
+               <div className="rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 p-12 text-center text-white relative overflow-hidden shadow-2xl">
+                   <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+                   <div className="relative z-10 max-w-2xl mx-auto">
+                       <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to transform your workflow?</h2>
+                       <p className="text-blue-100 text-lg mb-8">Join thousands of developers building the future with Ryze AI today.</p>
+                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                           <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 border-0 shadow-xl">
+                               Get Started Now
+                           </Button>
+                           <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10 hover:text-white backdrop-blur-sm">
+                               Contact Sales
+                           </Button>
+                       </div>
+                   </div>
+               </div>
+           </div>
+        </section>
+      </main>
+      
+      {/* Footer */}
+      <footer className="border-t py-12 bg-muted/20">
+         <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+               <div className="flex items-center gap-2">
+                  <div className="bg-blue-600 p-1.5 rounded-lg">
+                     <Lucide.Boxes className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="font-bold text-lg">Ryze AI</span>
+               </div>
+               <div className="text-sm text-muted-foreground">
+                  &copy; 2024 Ryze AI Inc. All rights reserved.
+               </div>
+               <div className="flex gap-4">
+                  <Lucide.Twitter className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
+                  <Lucide.Github className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
+                  <Lucide.Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
+               </div>
+            </div>
+         </div>
+      </footer>
+    </div>
+  );
+}
+        
+        // Auto-mount logic
+        const candidates = {
+            Component: typeof Component !== 'undefined' ? Component : null,
+            Dashboard: typeof Dashboard !== 'undefined' ? Dashboard : null,
+            LandingPage: typeof LandingPage !== 'undefined' ? LandingPage : null,
+            LoginPage: typeof LoginPage !== 'undefined' ? LoginPage : null,
+            ContactForm: typeof ContactForm !== 'undefined' ? ContactForm : null,
+            App: typeof App !== 'undefined' ? App : null
+        };
+        
+        const MountPoint = Object.values(candidates).find(c => c !== null);
+                          
+        if (MountPoint) {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<MountPoint />);
+        } else {
+             // Try to find any function formatted like a component
+             document.body.innerHTML = '<div style="padding: 20px; color: red;">Could not auto-detect Main Component. Please check console.</div>';
+        }
+    </script>
+</body>
+</html>

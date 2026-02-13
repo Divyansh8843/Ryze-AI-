@@ -23,6 +23,7 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('dev')); // Logger
 
+
 // CORS Configuration
 app.use(cors({
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173', process.env.FRONTEND_URL],
@@ -30,7 +31,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // Routes
 app.use('/api/generator', generatorRoutes);
@@ -112,7 +113,10 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 API Gateway running on port ${PORT}`);
   console.log(`🔗 Connected to AI Service at ${process.env.AI_SERVICE_URL || 'http://localhost:5001'}`);
 });
+
+// Increase timeout to 5 minutes (300000ms) to accommodate Render cold starts
+server.setTimeout(300000);

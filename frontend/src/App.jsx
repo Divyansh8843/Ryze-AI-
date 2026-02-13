@@ -11,7 +11,9 @@ import * as ComponentLibrary from './components/ui';
 import { transform } from '@babel/standalone';
 
 // API Configuration
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/generate$/, '');
+// API Configuration
+// Use relative path for local development to leverage Vite proxy
+const API_URL = import.meta.env.DEV ? '/api/generator' : (import.meta.env.VITE_API_URL || '').replace(/\/generate$/, '');
 const DEPLOY_URL = 'http://localhost:5000/deploy';
 
 
