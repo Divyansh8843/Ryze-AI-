@@ -22,11 +22,20 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 app.use(morgan('dev')); // Logger
+app.use((req, res, next) => {
+  console.log(`[DEBUG] Received ${req.method} request for ${req.url} at ${new Date().toISOString()}`);
+  next();
+});
 
 
 // CORS Configuration
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', process.env.FRONTEND_URL],
+  origin: [
+    'http://localhost:5173', 
+    'http://127.0.0.1:5173', 
+    'https://ryze-ai-agent.vercel.app', // Explicit Vercel Domain
+    process.env.FRONTEND_URL // Dynamic Env Var
+  ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));

@@ -11,10 +11,35 @@ import * as ComponentLibrary from './components/ui';
 import { transform } from '@babel/standalone';
 
 // API Configuration
+// -----------------------------------------------------------------------------
 // API Configuration
-// Use relative path for local development to leverage Vite proxy
-const API_URL = import.meta.env.DEV ? '/api/generator' : (import.meta.env.VITE_API_URL || '').replace(/\/generate$/, '');
-const DEPLOY_URL = 'http://localhost:5000/deploy';
+// -----------------------------------------------------------------------------
+
+// Determine Backend Base URL
+// In Dev: Defaults to localhost:5000
+// In Prod: Uses VITE_API_URL from Vercel Env (must be the root URL or /api/generator specific)
+const getBaseUrl = () => {
+  if (import.meta.env.DEV) return 'http://localhost:5000';
+  
+  // Clean up the env var: remove trailing slashes and specific paths to get the root
+  // Expecting VITE_API_URL to be like: https://backend.onrender.com/api/generator or just https://backend.onrender.com
+  let url = import.meta.env.VITE_API_URL || '';
+  url = url.replace(/\/api\/generator\/?$/, ''); // Remove /api/generator if present
+  url = url.replace(/\/+$/, ''); // Remove trailing slash
+  return url;
+};
+
+const BASE_URL = getBaseUrl();
+
+// Derived Endpoints
+const API_URL = `${BASE_URL}/api/generator`; // Used for /generate and /modify
+const DEPLOY_URL = `${BASE_URL}/deploy`;     // Used for /deploy
+
+// Debug Logs (Verify connectivity logic)
+console.log(`[Config] Env: ${import.meta.env.MODE}`);
+console.log(`[Config] Base URL: ${BASE_URL}`);
+console.log(`[Config] API URL: ${API_URL}`);
+console.log(`[Config] Deploy URL: ${DEPLOY_URL}`);
 
 
 // -----------------------------------------------------------------------------
@@ -497,6 +522,15 @@ export default function App() {
   useEffect(() => {
      setStatus('Ryze Neural Engine Ready');
      setTimeout(() => setStatus(''), 3000);
+     
+     // Check Backend Connectivity
+     fetch(`${BASE_URL}/health`)
+       .then(res => res.json())
+       .then(data => console.log('✅ Backend Connected:', data))
+       .catch(err => {
+         console.error('❌ Backend Connection Failed:', err);
+         setStatus('⚠️ Backend not reachable. Ensure server is running on port 5000.');
+       });
   }, []);
 
   const handleVoiceInput = () => {
@@ -554,11 +588,15 @@ export default function App() {
          response = await axios.post(`${API_URL}/modify`, {
              prompt: promptToUse,
              currentCode: history[currentStep].code
+         }, {
+            timeout: 300000 // 5 minutes
          });
       } else {
          setStatus('⚛️ Compiling React Component...');
          response = await axios.post(`${API_URL}/generate`, {
              prompt: promptToUse
+         }, {
+            timeout: 300000 // 5 minutes
          });
       }
 
