@@ -15,7 +15,19 @@ CORS(app) # Enable CORS for all routes
 def health_check():
     return jsonify({"status": "running", "engine": "Symbolic NLP"}), 200
 
+@app.errorhandler(500)
+def internal_error(error):
+    app.logger.error(f"Server Error: {error}")
+    return jsonify({"error": "Internal Server Error", "details": str(error)}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f"Unhandled Exception: {e}")
+    return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
 @app.route('/generate', methods=['POST'])
+@app.route('/api/generator/generate', methods=['POST'])
+
 def generate_ui():
     """
     Main endpoint for AI UI Generation.
@@ -72,6 +84,7 @@ def generate_ui():
     })
 
 @app.route('/modify', methods=['POST'])
+@app.route('/api/generator/modify', methods=['POST'])
 def modify_ui():
     """
     Endpoint for iterative refinement.
