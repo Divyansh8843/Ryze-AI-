@@ -1,16 +1,25 @@
+const dotenv = require('dotenv');
+// Load env vars immediately, allowing override of system vars (e.g. stale Render URLs)
+dotenv.config({ override: true });
+
+// Intelligent AI Service URL Resolution (Fix for Render/Localhost confusion)
+if (process.env.NODE_ENV !== 'production') {
+    const currentUrl = process.env.AI_SERVICE_URL;
+    if (!currentUrl || currentUrl.includes('onrender.com')) {
+        console.warn('⚠️ [Config] Detected remote/missing AI Service URL in development. Forcing local instance.');
+        process.env.AI_SERVICE_URL = 'http://localhost:5001';
+    }
+}
+
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const generatorRoutes = require('./routes/generator.routes');
 const githubRoutes = require('./routes/github.routes');
-
-// Load env vars
-dotenv.config();
 
 // Connect to Database
 // Note: Optional for this architecture, but included for complete MERN stack compliance.
